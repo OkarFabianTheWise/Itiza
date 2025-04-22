@@ -19,8 +19,8 @@ export default function GiftAirtime() {
 
   //   const { connection } = useConnection();
   const wallet = useWallet();
-  console.log("Airbills secret key", AIRBILLS_SECRET_KEY);
-  console.log("Solscan API key", SOLSCAN_API_KEY);
+  // console.log("Airbills secret key", AIRBILLS_SECRET_KEY);
+  // console.log("Solscan API key", SOLSCAN_API_KEY);
 
   // Initialize Framp Relayer
   const relayer = new FrampRelayer({

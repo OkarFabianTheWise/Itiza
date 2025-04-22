@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
-import GiftStore from "./pages/GiftStore";
 import GiftAirtime from "./pages/GiftAirtime";
 import GiftToken from "./pages/GiftToken";
 import WalletContextProvider from "./components/walletConnect";
@@ -14,14 +13,6 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route
-              path="/gift-store"
-              element={
-                <ProtectedRoute>
-                  <GiftStore />
-                </ProtectedRoute>
-              }
-            />
             <Route
               path="/gift-airtime"
               element={
