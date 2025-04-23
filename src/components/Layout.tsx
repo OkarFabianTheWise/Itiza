@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { Header } from "./Header";
+import { PageBackground } from "./background";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -25,9 +26,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const title = getTitleFromPath(location.pathname);
 
   return (
-    <>
-      <Header title={title} />
-      {children}
-    </>
+    <PageBackground>
+      <div className="min-h-screen relative z-1">
+        <Header title={title} />
+        {children}
+      </div>
+    </PageBackground>
   );
 };

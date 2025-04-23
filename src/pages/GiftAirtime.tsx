@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { wavyitem, flatgift } from "@/images";
 import { TokenAddress, TOKEN_ADDRESSES, TOKEN_LIST } from "@/config/tokens";
 import { FrampRelayer } from "framp-relay-sdk";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { Transaction, VersionedTransaction } from "@solana/web3.js";
 const AIRBILLS_SECRET_KEY = import.meta.env.VITE_PUBLIC_AIRBILLS_SECRET_KEY;
 const SOLSCAN_API_KEY = import.meta.env.VITE_PUBLIC_SOLSCAN_API_KEY;
 
@@ -13,14 +14,12 @@ export default function GiftAirtime() {
   const [selectedToken, setSelectedToken] = useState<TokenAddress>(
     TOKEN_ADDRESSES.USDC
   );
-
   const [message, setMessage] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const { connection } = useConnection();
 
   //   const { connection } = useConnection();
   const wallet = useWallet();
-  // console.log("Airbills secret key", AIRBILLS_SECRET_KEY);
-  // console.log("Solscan API key", SOLSCAN_API_KEY);
 
   // Initialize Framp Relayer
   const relayer = new FrampRelayer({
@@ -31,6 +30,35 @@ export default function GiftAirtime() {
   const handlePhoneNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^\d]/g, "");
     setPhoneNumber(value);
+  };
+
+  // 7. Poll for transaction status
+  const pollTransactionStatus = async (txId: string) => {
+    const maxAttempts = 3; // 1 minute total (12 * 5 seconds)
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      try {
+        const status = await relayer.confirmAirtimeTransaction(txId);
+        console.log(`Poll attempt ${attempts + 1}:`, status);
+
+        if (status?.success) {
+          setMessage("Airtime sent successfully! 🎉");
+          return status;
+        } else if (!status?.success) {
+          throw new Error("Airtime transaction failed");
+        }
+
+        // Wait 5 seconds before next poll
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        attempts++;
+      } catch (error) {
+        console.error("Polling error:", error);
+        throw error;
+      }
+    }
+
+    throw new Error("Transaction status check timed out");
   };
 
   const handleGiftAirtime = async () => {
@@ -56,22 +84,70 @@ export default function GiftAirtime() {
         userAddress: wallet.publicKey.toString(),
       });
 
-      if (!result?.signature) {
-        throw new Error("Failed to send airtime gift");
+      // Try to decode as both types
+      let transaction;
+      try {
+        // First try as VersionedTransaction
+        transaction = VersionedTransaction.deserialize(
+          Buffer.from(result.txBase64, "base64")
+        );
+        console.log("Decoded as VersionedTransaction");
+      } catch (e) {
+        // If that fails, try as Legacy Transaction
+        transaction = Transaction.from(Buffer.from(result.txBase64, "base64"));
+        console.log("Decoded as Legacy Transaction");
+
+        // For Legacy transactions, we need to set the blockhash
+        const latestBlockhash = await connection.getLatestBlockhash(
+          "confirmed"
+        );
+        transaction.recentBlockhash = latestBlockhash.blockhash;
       }
 
-      // Verify transaction status
-      const isSuccess = await relayer.verifyTransactionStatus(
-        result?.signature
+      if (!transaction) {
+        throw new Error("Failed to decode transaction");
+      }
+
+      // Check if wallet can sign
+      if (!wallet.signTransaction) {
+        throw new Error("Wallet does not support transaction signing");
+      }
+
+      // Sign the transaction
+      const signed = await wallet.signTransaction(transaction);
+      console.log("Transaction signed successfully");
+
+      // Send the transaction
+      const signature = await connection.sendRawTransaction(
+        signed.serialize(),
+        { maxRetries: 5 }
       );
+      console.log("Transaction sent:", signature);
 
-      if (isSuccess) {
-        setMessage("Airtime sent successfully! 🎉");
-        setPhoneNumber("");
-        setAmount(0);
-      } else {
-        throw new Error("Transaction verification failed");
+      // Wait for confirmation
+      // const confirmation = await connection.confirmTransaction(
+      //   {
+      //     signature,
+      //     blockhash: latestBlockhash.blockhash,
+      //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      //   },
+      //   "confirmed"
+      // );
+
+      // if (confirmation.value.err) {
+      //   throw new Error(`Transaction failed: ${confirmation.value.err}`);
+      // }
+
+      if (!result?.id) {
+        throw new Error("Transaction ID not found in response");
       }
+
+      // Confirm with backend
+      setMessage("Transaction successful!");
+      // 7. Check transaction status, in a like of webhook, or polling, do this every 5 seconds
+      const relayStatus = await pollTransactionStatus(result?.id);
+
+      console.log("Relay status:", relayStatus);
     } catch (error) {
       console.error("Airtime gift error:", error);
       setMessage(

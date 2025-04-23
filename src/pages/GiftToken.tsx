@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
-import { wavyitem, flatgift } from "@/images";
 import { invokeGiftToken } from "@/utils/helpers";
+import { PublicKey } from "@solana/web3.js";
+import { Layout } from "@/components/Layout";
 
 type TokenSymbol = "SOL" | "USDC" | "USDT";
 
@@ -19,9 +20,18 @@ export default function GiftToken() {
   const feeRate = 0.05; // 5% fee
 
   useEffect(() => {
-    // You can optionally fetch the user balance here
-    // setUserBalance(...)
+    const fetchUserBalance = async () => {
+      const balance = await getSolBalance(wallet.publicKey!);
+      setUserBalance(balance);
+    };
+    fetchUserBalance();
   }, [wallet.publicKey, selectedToken]);
+
+  //get user balance
+  const getSolBalance = async (publicKey: PublicKey) => {
+    const lamports = await connection.getBalance(publicKey);
+    return lamports / 1e9;
+  };
 
   const handleGiftToken = async (): Promise<void> => {
     if (!wallet.connected || !wallet.publicKey) {
@@ -67,21 +77,7 @@ export default function GiftToken() {
   };
 
   return (
-    <div className="min-h-screen h-screen overflow-x-auto overflow-y-hidden relative bg-gradient-to-b from-[#fce8e6] via-[#fbd9db] to-[#f9f1ec]">
-      {/* Background Elements */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <img
-          src={wavyitem}
-          alt="Wavy fabric"
-          className="absolute top-0 right-0 w-64 opacity-30 blur-sm transform scale-110 rotate-6"
-        />
-        <img
-          src={flatgift}
-          alt="Gift box"
-          className="absolute bottom-4 left-4 w-40 opacity-40 blur-[1px]"
-        />
-      </div>
-
+    <Layout>
       {/* Main content */}
       <div className="min-h-screen pt-20 px-4 relative z-1">
         <div className="max-w-lg mx-auto bg-white/30 backdrop-blur-xl rounded-3xl p-6 shadow-2xl">
@@ -97,7 +93,7 @@ export default function GiftToken() {
             {/* Token Selection */}
             <div className="space-y-2">
               <label className="text-[#832c2c]/90 font-medium block">
-                Select Token
+                Pay with
               </label>
               <select
                 value={selectedToken}
@@ -110,6 +106,20 @@ export default function GiftToken() {
                 <option value="USDC">USDC</option>
                 <option value="USDT">USDT</option>
               </select>
+            </div>
+
+            {/* Recipient Address */}
+            <div className="space-y-2">
+              <label className="text-[#832c2c]/90 font-medium block">
+                Token to gift
+              </label>
+              <input
+                type="text"
+                value={giftAddress}
+                onChange={(e) => setGiftAddress(e.target.value)}
+                placeholder="Enter recipient address"
+                className="w-full px-4 py-3 rounded-xl bg-white/50 border border-[#e47a7a]/20 focus:border-[#e47a7a] focus:ring-2 focus:ring-[#e47a7a]/20 transition-all"
+              />
             </div>
 
             {/* Recipient Address */}
@@ -177,6 +187,6 @@ export default function GiftToken() {
           </form>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
