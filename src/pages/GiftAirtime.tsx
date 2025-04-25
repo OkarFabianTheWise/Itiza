@@ -76,7 +76,6 @@ export default function GiftAirtime() {
     setMessage("");
 
     try {
-      console.log("wallet string", wallet.publicKey.toString());
       const result = await relayer.sendAirtime({
         phoneNumber,
         amount,
@@ -84,69 +83,99 @@ export default function GiftAirtime() {
         userAddress: wallet.publicKey.toString(),
       });
 
-      // Try to decode as both types
-      let transaction;
-      try {
-        // First try as VersionedTransaction
-        transaction = VersionedTransaction.deserialize(
-          Buffer.from(result.txBase64, "base64")
-        );
-        console.log("Decoded as VersionedTransaction");
-      } catch (e) {
-        // If that fails, try as Legacy Transaction
-        transaction = Transaction.from(Buffer.from(result.txBase64, "base64"));
-        console.log("Decoded as Legacy Transaction");
+      console.log("API result:", result);
 
-        // For Legacy transactions, we need to set the blockhash
-        const latestBlockhash = await connection.getLatestBlockhash(
+      // Get latest blockhash
+      const latestBlockhash = await connection.getLatestBlockhash("confirmed");
+
+      // Handle non-USDC/USDT case with swap + airtime transactions
+      if (result.swapTransaction && result.airtimeTransaction) {
+        // 1. Sign and send swap transaction first
+        const swapTx = result.swapTransaction;
+        if (!wallet.signTransaction) {
+          throw new Error("Wallet does not support transaction signing");
+        }
+
+        const signedSwap = await wallet.signTransaction(swapTx);
+        const swapSignature = await connection.sendRawTransaction(
+          signedSwap.serialize(),
+          { maxRetries: 5 }
+        );
+
+        console.log("Swap transaction sent:", swapSignature);
+
+        // Wait for swap confirmation
+        const swapConfirmation = await connection.confirmTransaction(
+          {
+            signature: swapSignature,
+            blockhash: latestBlockhash.blockhash,
+            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          },
           "confirmed"
         );
-        transaction.recentBlockhash = latestBlockhash.blockhash;
+
+        if (swapConfirmation.value.err) {
+          throw new Error(
+            `Swap transaction failed: ${swapConfirmation.value.err}`
+          );
+        }
+
+        // 2. Sign and send airtime transaction
+        const airtimeTx = result.airtimeTransaction;
+        const signedAirtime = await wallet.signTransaction(airtimeTx);
+        const airtimeSignature = await connection.sendRawTransaction(
+          signedAirtime.serialize(),
+          { maxRetries: 5 }
+        );
+
+        console.log("Airtime transaction sent:", airtimeSignature);
+
+        // Wait for airtime confirmation
+        const airtimeConfirmation = await connection.confirmTransaction(
+          {
+            signature: airtimeSignature,
+            blockhash: latestBlockhash.blockhash,
+            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          },
+          "confirmed"
+        );
+
+        if (airtimeConfirmation.value.err) {
+          throw new Error(
+            `Airtime transaction failed: ${airtimeConfirmation.value.err}`
+          );
+        }
+      } else {
+        // Handle direct USDC/USDT transaction
+        const transaction = Transaction.from(
+          Buffer.from(result.txBase64, "base64")
+        );
+        const signed = await wallet.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(
+          signed.serialize(),
+          { maxRetries: 5 }
+        );
+
+        const confirmation = await connection.confirmTransaction(
+          {
+            signature,
+            blockhash: latestBlockhash.blockhash,
+            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          },
+          "confirmed"
+        );
+
+        if (confirmation.value.err) {
+          throw new Error(`Transaction failed: ${confirmation.value.err}`);
+        }
       }
-
-      if (!transaction) {
-        throw new Error("Failed to decode transaction");
-      }
-
-      // Check if wallet can sign
-      if (!wallet.signTransaction) {
-        throw new Error("Wallet does not support transaction signing");
-      }
-
-      // Sign the transaction
-      const signed = await wallet.signTransaction(transaction);
-      console.log("Transaction signed successfully");
-
-      // Send the transaction
-      const signature = await connection.sendRawTransaction(
-        signed.serialize(),
-        { maxRetries: 5 }
-      );
-      console.log("Transaction sent:", signature);
-
-      // Wait for confirmation
-      // const confirmation = await connection.confirmTransaction(
-      //   {
-      //     signature,
-      //     blockhash: latestBlockhash.blockhash,
-      //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      //   },
-      //   "confirmed"
-      // );
-
-      // if (confirmation.value.err) {
-      //   throw new Error(`Transaction failed: ${confirmation.value.err}`);
-      // }
 
       if (!result?.id) {
         throw new Error("Transaction ID not found in response");
       }
 
-      // Confirm with backend
       setMessage("Transaction successful!");
-      // 7. Check transaction status, in a like of webhook, or polling, do this every 5 seconds
-      const relayStatus = await pollTransactionStatus(result?.id);
-
+      const relayStatus = await pollTransactionStatus(result.id);
       console.log("Relay status:", relayStatus);
     } catch (error) {
       console.error("Airtime gift error:", error);
