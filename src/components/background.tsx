@@ -6,9 +6,9 @@ interface PageBackgroundProps {
 
 export function PageBackground({ children }: PageBackgroundProps) {
   return (
-    <div className="min-h-screen h-screen overflow-x-auto overflow-y-hidden relative bg-gradient-to-b from-[#fce8e6] via-[#fbd9db] to-[#f9f1ec]">
+    <div className="min-h-screen relative bg-gradient-to-b from-[#fce8e6] via-[#fbd9db] to-[#f9f1ec]">
       {/* Background Elements */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <img
           src={wavyitem}
           alt="Wavy fabric"

@@ -9,4 +9,5 @@ export { default as goldring } from "./gold-ring.png";
 export { default as teddybear } from "./teddy.png";
 export { default as wristwatch } from "./wristwatch.png";
 export { default as winebottle } from "./wine.png";
-// export { default as goldbracelet } from "./gold-bracelet.png";
+export { default as velvetbox } from "./velvetbox.png";
+export { default as perfume } from "./perfume.png";

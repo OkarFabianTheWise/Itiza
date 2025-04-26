@@ -2,9 +2,18 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AnimatedPoints } from "@/components/ui/point";
-import { pendant, goldring, teddybear, wristwatch, winebottle } from "@/images";
+import {
+  pendant,
+  goldring,
+  teddybear,
+  wristwatch,
+  winebottle,
+  velvetbox,
+  // perfume,
+} from "@/images";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/Layout";
+import { GiftModal } from "@/components/GiftModal";
 
 const items = [
   {
@@ -29,7 +38,7 @@ const items = [
     id: 4,
     name: "Wristwatch",
     img: wristwatch,
-    price: "700",
+    price: "750",
   },
   {
     id: 5,
@@ -39,16 +48,32 @@ const items = [
   },
   {
     id: 6,
-    name: "Gold Bracelet",
-    img: winebottle,
-    price: "800",
+    name: "Ring Pack",
+    img: velvetbox,
+    price: "1200",
   },
+  // {
+  //   id: 7,
+  //   name: "Idol Perfume",
+  //   img: perfume,
+  //   price: "230",
+  // },
 ];
 
 export default function Dashboard() {
+  // new states for modal and selected item
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [loyaltyPoints, _setLoyaltyPoints] = useState(200);
   const [animatePoints, _setAnimatePoints] = useState(false);
   const navigate = useNavigate();
+
+  // handlers for points animation
+  const handleItemClick = (item: any) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
 
   // navigation handlers
   const handleGiftAirtime = (e: React.MouseEvent) => {
@@ -65,7 +90,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="container mx-auto max-w-4xl px-4">
+      <div className="container mx-auto max-w-4xl px-4 min-h-screen pb-8 pt-20 overflow-y-auto">
         <div className="bg-white/30 backdrop-blur-xl rounded-3xl p-6 md:p-8 shadow-2xl">
           {/* Balance Section */}
           <div className="mb-8">
@@ -77,7 +102,7 @@ export default function Dashboard() {
             </div>
             <div className="bg-gradient-to-r from-[#f6c1c1] to-[#fbe9e7] rounded-2xl p-8 text-center shadow-lg">
               <span className="text-4xl md:text-5xl font-bold text-[#832c2c]">
-                $1,000
+                $1,300
               </span>
             </div>
           </div>
@@ -92,7 +117,7 @@ export default function Dashboard() {
             </Button>
             <Button
               onClick={handleGiftToken}
-              className="bg-[#f4b6b6] hover:bg-[#f09090] text-white rounded-xl py-4 text-lg font-medium transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              className="bg-[#e47a7a] hover:bg-[#d76666] text-white rounded-xl py-4 text-lg font-medium transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
             >
               Gift Token
             </Button>
@@ -107,6 +132,7 @@ export default function Dashboard() {
               {items.map((item) => (
                 <Card
                   key={item.id}
+                  onClick={() => handleItemClick(item)}
                   className="group bg-white/40 hover:bg-white/60 transition-all cursor-pointer border-0 shadow-md hover:shadow-xl rounded-xl overflow-hidden hover:-translate-y-1"
                 >
                   <CardContent className="p-4">
@@ -129,6 +155,14 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        {/* Modal.. */}
+        {selectedItem && (
+          <GiftModal
+            item={selectedItem}
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+          />
+        )}
       </div>
     </Layout>
   );

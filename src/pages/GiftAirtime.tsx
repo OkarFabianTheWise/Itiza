@@ -4,7 +4,7 @@ import { wavyitem, flatgift } from "@/images";
 import { TokenAddress, TOKEN_ADDRESSES, TOKEN_LIST } from "@/config/tokens";
 import { FrampRelayer } from "framp-relay-sdk";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { Transaction, VersionedTransaction } from "@solana/web3.js";
+import { Transaction } from "@solana/web3.js";
 const AIRBILLS_SECRET_KEY = import.meta.env.VITE_PUBLIC_AIRBILLS_SECRET_KEY;
 const SOLSCAN_API_KEY = import.meta.env.VITE_PUBLIC_SOLSCAN_API_KEY;
 
@@ -150,6 +150,10 @@ export default function GiftAirtime() {
         const transaction = Transaction.from(
           Buffer.from(result.txBase64, "base64")
         );
+        if (!wallet.signTransaction) {
+          throw new Error("Wallet does not support transaction signing");
+        }
+
         const signed = await wallet.signTransaction(transaction);
         const signature = await connection.sendRawTransaction(
           signed.serialize(),

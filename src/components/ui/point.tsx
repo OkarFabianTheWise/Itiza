@@ -59,7 +59,7 @@ export const AnimatedPoints: React.FC<AnimatedPointsProps> = ({
       >
         <div className="relative flex items-center space-x-2">
           <span className="text-[#832c2c] font-bold">{points}</span>
-          <span className="text-[#832c2c]/80">Points</span>
+          <span className="text-[#832c2c]/80">Verxios</span>
 
           {/* Subtle inner glow */}
           <motion.div

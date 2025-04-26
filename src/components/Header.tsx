@@ -11,7 +11,7 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
   const showBackButton = location.pathname !== "/";
 
   return (
-    <div className="fixed top-0 left-0 right-0 flex justify-between items-center p-3 z-10 bg-[#eecbc8]/60 backdrop-blur-sm shadow-sm">
+    <div className="fixed top-0 left-0 right-0 flex justify-between items-center h-16 p-3 z-10 bg-[#eecbc8]/60 backdrop-blur-sm shadow-sm">
       <div className="flex items-center space-x-4">
         {showBackButton && (
           <button
