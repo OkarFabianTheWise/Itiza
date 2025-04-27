@@ -26,10 +26,34 @@ const relationships = [
 ];
 
 const defaultStories = {
-  "Wine Bottle": "Toast to our beautiful moments together...",
-  "Teddy Bear": "A soft reminder of my warm embrace...",
-  "Gold Pendant": "A symbol of our eternal connection...",
-  // Add more default messages
+  "Wine Bottle":
+    "Toast to our beautiful moments together, each sip a memory cherished...",
+  "Teddy Bear":
+    "A soft reminder of my warm embrace, always here when you need comfort...",
+  "Gold Pendant":
+    "A symbol of our eternal connection, shining with every heartbeat we share...",
+  "Gold Ring":
+    "A circle of endless love and commitment, as timeless as the bond we hold...",
+  "Gold Necklace":
+    "A shining token of my affection, draping you in the warmth of my love...",
+  "Ring Pack":
+    "A treasure chest of beautiful memories, each ring a story of us written in gold...",
+  "Silver Wrist Watch":
+    "Every second with you is priceless—may this timepiece remind you of our journey together...",
+  "Diamond Ring":
+    "A sparkle that reflects the light in your eyes and the love in my heart...",
+  "Luxury Chocolate Box":
+    "A sweet collection of moments, crafted to mirror the joy you bring into my life...",
+  "Velvet Jewelry Box":
+    "Within this box lies a piece of my heart, a promise of love wrapped in elegance...",
+  "Pearl Bracelet":
+    "Delicate and pure, like the bond we share, timeless and true...",
+  "Wavy Gift Box":
+    "A wave of joy and surprises, just like every day spent with you...",
+  "Flat Gift Pack":
+    "A simple gesture, wrapped in endless gratitude and love...",
+  Beads:
+    "Tiny treasures woven together, just like the memories we’ve created side by side...",
 };
 
 export function GiftModal({ item, isOpen, onClose }: GiftModalProps) {
@@ -53,7 +77,7 @@ export function GiftModal({ item, isOpen, onClose }: GiftModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative bg-white/90 backdrop-blur-md w-full max-w-2xl m-4 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative bg-white/90 backdrop-blur-md w-full max-w-2xl m-4 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh]">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -62,7 +86,7 @@ export function GiftModal({ item, isOpen, onClose }: GiftModalProps) {
           <X size={24} />
         </button>
 
-        <div className="grid md:grid-cols-2 gap-6 p-6">
+        <div className="grid md:grid-cols-2 gap-6 p-6 max-h-[90vh] overflow-y-auto">
           {/* Image Section */}
           <div className="aspect-square rounded-xl overflow-hidden">
             <img

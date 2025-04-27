@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { CustomWalletMultiButton } from "./walletConnect";
+import { GiftNotifications } from "./GiftNotification";
 
 interface HeaderProps {
   title: string;
@@ -25,7 +26,10 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
           {title}
         </h1>
       </div>
-      <CustomWalletMultiButton />
+      <div className="flex items-center gap-4">
+        <GiftNotifications />
+        <CustomWalletMultiButton />
+      </div>
     </div>
   );
 };
