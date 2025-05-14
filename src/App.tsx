@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import GiftAirtime from "./pages/GiftAirtime";
 import GiftToken from "./pages/GiftToken";
 import Categories from "./pages/Categories";
+import MerchantDashboard from "./pages/MerchantDashboard"; // Add this import
 import WalletContextProvider from "./components/walletConnect";
 import { Layout } from "./components/Layout";
 import Home from "./pages/Home";
@@ -23,6 +24,16 @@ function App() {
             }
           />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/merchant" element={<MerchantDashboard />} />
+          {/* Add the new merchant route */}
+          {/* <Route
+            path="/merchant"
+            element={
+              <ProtectedRoute>
+                <MerchantDashboard />
+              </ProtectedRoute>
+            }
+          /> */}
           <Route
             path="/gift-airtime"
             element={

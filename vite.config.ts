@@ -3,7 +3,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 
-
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
@@ -26,11 +25,14 @@ export default defineConfig({
       }
     }
   },
-  plugins: [react()],
+  plugins: [
+    react()
+  ],
   define: {
     'process.env.ANCHOR_BROWSER': true
   },
   optimizeDeps: {
+    exclude: ['convex'],
     esbuildOptions: {
       define: {
         global: 'globalThis'
@@ -39,6 +41,13 @@ export default defineConfig({
         NodeGlobalsPolyfillPlugin({
           buffer: true
         })
+      ]
+    }
+  },
+  build: {
+    rollupOptions: {
+      external: [
+        /convex\/.*/
       ]
     }
   },

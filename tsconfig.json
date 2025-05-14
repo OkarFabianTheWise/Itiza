@@ -7,11 +7,15 @@
   "compilerOptions": {
     "baseUrl": "src/",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/components/*": ["./src/components/*"],
+      "convex/*": ["./convex/*"]
     },
     "typeRoots": [
       "./node_modules/@types",
-      "./src/types"
+      "./src/types",
+      "./convex/_generated"
     ]
   }
 }
